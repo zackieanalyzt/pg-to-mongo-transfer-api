@@ -1,0 +1,25 @@
+{
+  "name": "pg-to-mongo-transfer-api",
+  "version": "1.0.0",
+  "description": "Transfer data from PostgreSQL to MongoDB",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zackieanalyzt/pg-to-mongo-transfer-api.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zackieanalyzt/pg-to-mongo-transfer-api/issues"
+  },
+  "homepage": "https://github.com/zackieanalyzt/pg-to-mongo-transfer-api#readme",
+  "dependencies": {
+    "express": "^5.1.0",
+    "mongo": "^0.1.0",
+    "pg": "^8.16.0"
+  }
+}
