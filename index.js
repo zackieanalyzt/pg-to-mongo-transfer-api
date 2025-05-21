@@ -17,25 +17,30 @@ const mongoUrl = 'mongodb://localhost:27017';
 const dbName = 'migration_db';
 let mongoClient;
 
-(async () => {
-  mongoClient = await MongoClient.connect(mongoUrl, {
-    useUnifiedTopology: true,
-  });
-  console.log('Connected to MongoDB');
-})();
+async function connectMongo() {
+  try {
+    mongoClient = await MongoClient.connect(mongoUrl, { useUnifiedTopology: true });
+    console.log('Connected to MongoDB');
+  } catch (error) {
+    console.error('Failed to connect to MongoDB:', error.message);
+    process.exit(1); // หยุดเซิร์ฟเวอร์ถ้าเชื่อมต่อไม่ได้
+  }
+}
+connectMongo();
 
 // Endpoint สำหรับโอนย้ายข้อมูล
 app.get('/migrate', async (req, res) => {
   const { year, month } = req.query;
 
   try {
-    // ดึงข้อมูลจาก PostgreSQL
+    if (!mongoClient) {
+      await connectMongo();
+    }
     const pgResult = await pgPool.query(
-      'SELECT * FROM items WHERE year = $1 ',
+      'SELECT * FROM items WHERE year = $1',
       [year]
     );
 
-    // แปลงข้อมูลให้พร้อมบันทึก
     const items = pgResult.rows.map(row => ({
       hn: row.hn,
       vn: row.vn,
@@ -51,7 +56,6 @@ app.get('/migrate', async (req, res) => {
       quarter: row.quarter
     }));
 
-    // บันทึกข้อมูลลง MongoDB
     const db = mongoClient.db(dbName);
     const collection = db.collection('items');
     await collection.insertMany(items);
@@ -62,21 +66,24 @@ app.get('/migrate', async (req, res) => {
   }
 });
 
-// เริ่มเซิร์ฟเวอร์
-app.listen(3003, () => {
-  console.log('Server running on port 3003');
-});
-
 // เรียกดูข้อมูลจาก MongoDB
 app.get('/get-items', async (req, res) => {
   try {
+    if (!mongoClient) {
+      await connectMongo();
+    }
     const db = mongoClient.db('migration_db');
     const collection = db.collection('items');
-    const year = parseInt(req.query.year) || 2019; // ใช้ค่าเริ่มต้นเป็น 2568 ถ้าไม่ระบุ
+    const year = req.query.year ? String(req.query.year) : "2019";
     const items = await collection.find({ year: year }).toArray();
 
     res.json({ success: true, data: items });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
+});
+
+// เริ่มเซิร์ฟเวอร์
+app.listen(3003, () => {
+  console.log('Server running on port 3003');
 });
