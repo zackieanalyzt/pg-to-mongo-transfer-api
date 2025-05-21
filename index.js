@@ -70,11 +70,12 @@ app.listen(3003, () => {
 // เรียกดูข้อมูลจาก MongoDB
 app.get('/get-items', async (req, res) => {
   try {
-const year = req.query.year ? String(req.query.year) : "2019";
-console.log(`Searching for year: ${year}`);
-const items = await collection.find({ year: year }).toArray();
-console.log(`Found items: ${items.length}`);
-res.json({ success: true, data: items });
+    const db = mongoClient.db('migration_db');
+    const collection = db.collection('items');
+    const year = parseInt(req.query.year) || 2019; // ใช้ค่าเริ่มต้นเป็น 2568 ถ้าไม่ระบุ
+    const items = await collection.find({ year: year }).toArray();
+
+    res.json({ success: true, data: items });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
