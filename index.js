@@ -6,8 +6,8 @@ const app = express();
 // ตั้งค่าเชื่อมต่อ PostgreSQL
 const pgPool = new Pool({
   user: 'postgres',
-  host: 'localhost',
-  database: 'superset',
+  host: '192.168.100.70',
+  database: 'databank',
   password: 'grespost',
   port: 5432,
 });
